@@ -1,0 +1,27 @@
+{
+  "summary": "Full frontend E2E of URJAA Supabase-direct app. Public homepage (logo now loads, GSTIN trust band, calculator sliders update, subsidy tiers ₹30k/₹60k/₹78k, FAQ accordion), footer GST/WhatsApp/email links, contact lead submission (persisted and visible in admin Leads), quotation flow (UP district dropdown, Goa free-text fallback, submit → summary + Saved status + wa.me/919867405251 WhatsApp button), admin login with seeded creds, dashboard KPIs render (values eventually populate), Leads screen shows freshly submitted lead and inline status update works, Quotations screen shows freshly submitted quote, detail expand + WhatsApp customer link (wa.me/91<phone>) + Print button, Products create with is_published → appears on public /products, Subsidies create/delete, admin logout returns to login, mobile menu toggle works.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin Dashboard KPI cards", "issues": ["KPI numeric values momentarily render as '—' before Supabase count queries resolve; consider showing a spinner/skeleton so cards do not read like 'no data'."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Dashboard.jsx uses `counts.leads ?? '—'` while `countRows` returns `count || 0`; the fallback '—' is visible until Promise.all resolves. Prefer a loading state or initialise state to 0 for smoother UX.",
+    "Quotations.jsx print flow calls window.open followed by w.document.write; some popup blockers will silently drop it. Consider a hidden iframe or explicit user-gesture guarded fallback.",
+    "Manage.jsx passes empty strings to Supabase as null via `payload[f.name] === '' → null`, which is fine, but number fields have no min/max validation (e.g. price could go negative).",
+    "Contact form success message is shown regardless of specific validation errors — Supabase RLS insert errors are surfaced via a generic message; acceptable but could be improved."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "n/a (Supabase-direct, not tested per request)", "frontend": "100% of requested flows passed" },
+  "test_credentials": "Admin urjaasolarenergy@gmail.com / UrjaaSolar@2026 (worked).",
+  "seed_data_creation": "Created and cleaned up: TEST_Product_<ts> (deleted). TEST_Subsidy_<ts> (deleted). Left in DB: TEST_Lead_<ts> and TEST_Quote_<ts> (used to prove Contact→Admin and Quotation→Admin integration end-to-end); main agent or next tester may want to purge these via admin UI.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "App is Supabase-direct (no FastAPI business logic). Public inserts anon-only into leads/quotations/service_requests; admin requires signed-in user with profile.role in (admin, staff). Seeded admin email urjaasolarenergy@gmail.com is auto-promoted to admin by handle_new_user trigger. Public /products page relies on RLS-published rows and the products table. Logo /urjaa-logo.jpeg is served from frontend/public and loads correctly (naturalWidth=1536).",
+  "rca of the issue": "No bugs found in this iteration. Previous iteration_1 broken-logo issue is resolved: logo is now served locally from /app/frontend/public/urjaa-logo.jpeg and returns HTTP 200 with proper image dimensions."
+}
