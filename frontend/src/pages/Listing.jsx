@@ -22,6 +22,8 @@ export default function Listing({ kind, title, eyebrow, copy, table, mapRow }) {
     return () => { alive = false; };
   }, [table, mapRow]);
   const items = rows || staticData[kind];
+  const linkFor = { solutions: "/quotation" };
+  const to = linkFor[kind];
   return (
     <>
       <Header />
@@ -29,13 +31,20 @@ export default function Listing({ kind, title, eyebrow, copy, table, mapRow }) {
         <div className="page-hero"><div className="container"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{copy}</p></div></div>
         <section className="section">
           <div className="container listing-grid">
-            {items.map(([t, tag, c], i) => (
-              <Reveal as="article" className="listing-item" key={`${t}-${i}`} delay={i * 70} data-testid={`listing-item-${i + 1}`}>
-                <span className="listing-index">{String(i + 1).padStart(2, "0")}</span>
-                <div><h2>{t}</h2><p>{c}</p><span className="tag">{tag}</span></div>
-                <ArrowRight />
-              </Reveal>
-            ))}
+            {items.map(([t, tag, c], i) => {
+              const inner = (
+                <>
+                  <span className="listing-index">{String(i + 1).padStart(2, "0")}</span>
+                  <div><h2>{t}</h2><p>{c}</p><span className="tag">{tag}</span></div>
+                  <ArrowRight />
+                </>
+              );
+              return to ? (
+                <Reveal as={Link} to={to} className="listing-item clickable" key={`${t}-${i}`} delay={i * 70} data-testid={`listing-item-${i + 1}`}>{inner}</Reveal>
+              ) : (
+                <Reveal as="article" className="listing-item" key={`${t}-${i}`} delay={i * 70} data-testid={`listing-item-${i + 1}`}>{inner}</Reveal>
+              );
+            })}
           </div>
         </section>
         <section className="slim-cta">

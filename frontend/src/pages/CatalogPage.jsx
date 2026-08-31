@@ -14,9 +14,15 @@ const emptyCopy = {
 
 export default function CatalogPage({ kind, eyebrow, title, copy }) {
   const [rows, setRows] = useState(null);
+  const [err, setErr] = useState("");
   useEffect(() => {
     let alive = true;
-    listRows(kind).then(({ data }) => { if (alive) setRows(data || []); });
+    setRows(null); setErr("");
+    listRows(kind).then(({ data, error }) => {
+      if (!alive) return;
+      if (error) setErr(error.message);
+      setRows(data || []);
+    });
     return () => { alive = false; };
   }, [kind]);
   const isProducts = kind === "products";
@@ -27,7 +33,10 @@ export default function CatalogPage({ kind, eyebrow, title, copy }) {
         <div className="page-hero"><div className="container"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{copy}</p></div></div>
         <section className="section">
           <div className="container">
-            {rows === null ? null : rows.length === 0 ? (
+            {err && <div className="catalog-empty" data-testid={`${kind}-error`}>Could not load: {err}</div>}
+            {rows === null ? (
+              <div className="catalog-empty" data-testid={`${kind}-loading`}>Loading…</div>
+            ) : rows.length === 0 ? (
               <div className="catalog-empty" data-testid={`${kind}-empty`}>{emptyCopy[kind]}</div>
             ) : (
               <div className="catalog-grid" data-testid={`${kind}-grid`}>
