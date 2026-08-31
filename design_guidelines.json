@@ -1,0 +1,50 @@
+{
+  "project": "URRJAA SOLAR ENERGY",
+  "app_type": "hybrid_fullstack",
+  "typography": {
+    "headings": "Cabinet Grotesk, Outfit, sans-serif",
+    "body": "Plus Jakarta Sans, Inter, sans-serif",
+    "mono": "JetBrains Mono, monospace"
+  },
+  "colors": {
+    "primary": "#0D5C32",
+    "primary_hover": "#094324",
+    "solar_accent": "#F59E0B",
+    "dark_bg": "#0A0F0D",
+    "surface": "#121A16",
+    "border": "rgba(255, 255, 255, 0.12)",
+    "text_main": "#F8FAFC",
+    "text_muted": "#94A3B8"
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-[#0A0F0D]/80 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)]",
+    "tracing_beam": "relative before:absolute before:inset-0 before:p-[1px] before:bg-gradient-to-r before:from-[#F59E0B] before:to-emerald-500 before:rounded-2xl before:-z-10",
+    "card_style": "bg-[#121A16] border border-white/10 rounded-2xl p-6 shadow-xl hover:border-emerald-500/50 transition-all duration-300"
+  },
+  "image_urls": {
+    "hero_solar_farm": "https://images.pexels.com/photos/38928940/pexels-photo-38928940.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "rooftop_installation": "https://images.unsplash.com/photo-1617269778723-73a40cf299bd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHw0fHxzb2xhciUyMHBhbmVscyUyMHJvb2Z0b3AlMjBjb21tZXJjaWFsJTIwaW5zdGFsbGF0aW9uJTIwc3Vuc2hpbmV8ZW58MHx8fHwxNzg4MTg5ODg3fDA&ixlib=rb-4.1.0&q=85",
+    "engineer_inspection": "https://images.unsplash.com/photo-1726221062415-9c403cd9aea5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxlbmdpbmVlciUyMGluc3BlY3RpbmclMjBzb2xhciUyMGFycmF5JTIwY2xlYW4lMjBlbmVyZ3l8ZW58MHx8fHwxNzg4MTg5ODg3fDA&ixlib=rb-4.1.0&q=85",
+    "sunset_farm": "https://images.pexels.com/photos/15896021/pexels-photo-15896021.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+  },
+  "components": [
+    "Navbar",
+    "Hero3DStatic",
+    "Calculator",
+    "SolutionsGrid",
+    "ProjectsShowcase",
+    "SubsidyCalculator",
+    "LeadCaptureForm",
+    "AdminDashboard",
+    "CustomerPortal",
+    "QuotationSystem",
+    "ServiceManagement",
+    "Footer"
+  ],
+  "accessibility": {
+    "contrast_ratio": "WCAG AA compliant (minimum 4.5:1 for normal text, 3:1 for large text)",
+    "reduced_motion": "Supported via CSS media queries",
+    "data_test_ids": "Required on all interactive elements"
+  },
+  "instructions_to_main_agent": "Build a production-grade full-stack platform for URRJAA SOLAR ENERGY with Supabase backend integration, fully editable solar savings calculator with PM-Surya Ghar subsidy estimator, interactive quotation system with PDF download, admin CRM dashboard, customer portal, service management ticketing, and cinematic UI design. Ensure all interactive elements include data-testid attributes."
+}
