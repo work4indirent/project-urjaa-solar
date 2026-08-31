@@ -27,15 +27,25 @@ Production-grade solar EPC platform for URJAA SOLAR ENERGY (Kunda, Pratapgarh, U
 - Customer portal placeholder retained at /customer (sign-in only, by design).
 - Testing: curl RLS/auth verification + testing agent iteration_2 — 100% frontend flows pass.
 
+## Implemented — 2026-06 (portal/media/settings batch — migration 003 APPLIED & E2E verified)
+- Migration /app/supabase/migrations/003_urjaa_portal_media.sql APPLIED by user. Adds: products/projects image_url; customers table with profile_id auto-link trigger (matches auth signup email → customer record); customer_id FKs on quotations/projects/service_requests; RLS ownership policies (customer sees only own records via customers.profile_id = auth.uid()); site_settings public read; storage buckets products+projects (public read, staff-only write via is_staff()).
+- Staff photo uploads: admin Products/Projects Manage drawer uploads to Supabase Storage → public URL; thumbnails in admin table; images render on public catalogue + product detail. (src/lib/db.js uploadImage, Manage.jsx image field.)
+- Admin Customers screen: add customer by email/phone → portal auto-activates on customer signup with same email. RLS confirmed: customer sees ONLY their linked quotations/projects/services.
+- Customer portal /customer: sign-in/up, activated portal shows quotations, project progress bars, service tickets; portal-not-active state with WhatsApp activation CTA.
+- Public catalogue /products (grid) + /products/:id detail page (spec table, quote + WhatsApp CTAs). /projects catalogue.
+- Admin Settings /admin/settings: edit calculator pricing & subsidy assumptions (site_settings 'calculator'); public calculator + quotations read live values via useCalcSettings hook. No code changes needed to adjust pricing.
+- Fixed: Manage.jsx customer dropdown refetches on drawer open (was empty if opened before mount fetch resolved).
+- Testing: iteration_3.json — 100% of new-feature flows pass (uploads, settings save+reflect, customer RLS ownership, product detail, WhatsApp link).
+
 ## Earlier (previous session)
 Public homepage foundation, calculator, lead form, hero fallback, responsive nav.
 
 ## Prioritized backlog
-- P1: Customer portal with linked projects/milestones/quotations/service tickets (needs customer↔record linkage + RLS ownership policies).
-- P1: Public service-request form feeding service_requests (admin screen already exists; anon insert policy already in place).
-- P1: Product/project image uploads via Supabase Storage buckets + public pages with images.
-- P1: Calculator assumptions editable via site_settings admin screen.
-- P2: 3D cinematic hero (R3F), SEO sitemap/JSON-LD, blog/FAQ CMS, quotation_items line-item editor in admin, dedicated solutions detail pages.
+- P1: CRA/CRACO/JS → Vite+TS+CSS Modules migration (original arch request, still unmet). Confirm with user if CRA acceptable.
+- P1: Replace generated product images with company-owned/licensed assets when available.
+- P1: Public service-request form feeding service_requests (admin screen + anon insert policy already exist).
+- P2: 3D cinematic hero (R3F), SEO sitemap/JSON-LD, blog/FAQ CMS, quotation_items line-item editor, dedicated solutions detail pages.
+- P2 (hardening from code review): client-side file size/MIME guard on uploads; range validation on Settings (savings_factor 0-1); ProductDetail is_published filter; purge orphan storage objects on product delete.
 
 ## Notes / gotchas
 - Never print Supabase keys; env in frontend/.env (REACT_APP_SUPABASE_*).

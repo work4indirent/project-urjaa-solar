@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { ArrowRight, FileText, LayoutDashboard, Loader2, LogOut, Package, Sun, Users, Wrench, Landmark, FolderKanban } from "lucide-react";
+import { ArrowRight, FileText, LayoutDashboard, Loader2, LogOut, Package, Settings, Sun, Users, UserPlus, Wrench, Landmark, FolderKanban } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { COMPANY } from "@/lib/company";
@@ -37,10 +37,12 @@ const links = [
   ["", "Dashboard", LayoutDashboard],
   ["leads", "Leads", Users],
   ["quotations", "Quotations", FileText],
+  ["customers", "Customers", UserPlus],
   ["products", "Products", Package],
   ["projects", "Projects", FolderKanban],
   ["subsidies", "Subsidies", Landmark],
   ["services", "Services", Wrench],
+  ["settings", "Settings", Settings],
 ];
 
 export default function AdminLayout() {

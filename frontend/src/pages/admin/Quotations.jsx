@@ -7,6 +7,7 @@ const STATUSES = ["requested", "surveyed", "sent", "accepted", "rejected", "comp
 
 export default function Quotations() {
   const [rows, setRows] = useState(null);
+  const [customers, setCustomers] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [error, setError] = useState("");
 
@@ -14,12 +15,18 @@ export default function Quotations() {
     const { data, error: err } = await listRows("quotations");
     if (err) setError(err.message);
     setRows(data || []);
+    const { data: cs } = await listRows("customers");
+    setCustomers(cs || []);
   }, []);
   useEffect(() => { load(); }, [load]);
 
   const setStatus = async (id, status) => {
     await updateRow("quotations", id, { status });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
+  };
+  const setCustomer = async (id, customer_id) => {
+    await updateRow("quotations", id, { customer_id: customer_id || null });
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, customer_id: customer_id || null } : r)));
   };
   const remove = async (id) => {
     if (!window.confirm("Delete this quotation?")) return;
@@ -87,6 +94,12 @@ export default function Quotations() {
                     <div className="highlight"><small>Payable</small><b>{inr(q.customer_payable)}</b></div>
                   </div>
                   {q.address && <p className="quote-meta">Site: {[q.address, q.city].filter(Boolean).join(", ")}</p>}
+                  <label className="link-customer-label">Portal customer
+                    <select className="status-select" value={q.customer_id || ""} onChange={(e) => setCustomer(q.id, e.target.value)} data-testid="quotation-customer-select">
+                      <option value="">— not linked —</option>
+                      {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : ""}</option>)}
+                    </select>
+                  </label>
                   <div className="quote-admin-actions">
                     <a className="button button-whatsapp" href={waCustomer(q)} target="_blank" rel="noreferrer" data-testid="quotation-whatsapp-customer"><MessageCircle size={15} /> WhatsApp customer</a>
                     <button className="button button-dark" onClick={() => printQuote(q)} data-testid="quotation-print-button"><Printer size={15} /> Print / PDF</button>

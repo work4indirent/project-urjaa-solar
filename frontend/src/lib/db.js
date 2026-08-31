@@ -21,3 +21,19 @@ export const countRows = async (table) => {
   const { count } = await supabase.from(table).select("*", { count: "exact", head: true });
   return count || 0;
 };
+
+export const uploadImage = async (bucket, file) => {
+  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, file);
+  if (error) throw error;
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+};
+
+export const getSetting = async (key) => {
+  const { data } = await supabase.from("site_settings").select("value").eq("key", key).maybeSingle();
+  return data?.value || null;
+};
+
+export const saveSetting = (key, value) =>
+  supabase.from("site_settings").upsert({ key, value, updated_at: new Date().toISOString() });
+

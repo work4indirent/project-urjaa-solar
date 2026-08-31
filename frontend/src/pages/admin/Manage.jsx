@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { deleteRow, insertRow, listRows, updateRow } from "@/lib/db";
+import { ImagePlus, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { deleteRow, insertRow, listRows, updateRow, uploadImage } from "@/lib/db";
 
 export default function Manage({ config }) {
-  const { table, title, subtitle, fields, columns, statusField, statusOptions } = config;
+  const { table, title, subtitle, fields, columns, statusField, statusOptions, bucket } = config;
   const [rows, setRows] = useState(null);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [customers, setCustomers] = useState([]);
+  const needsCustomers = fields.some((f) => f.type === "customer");
 
   const load = useCallback(async () => {
     const { data, error: err } = await listRows(table);
@@ -16,6 +19,17 @@ export default function Manage({ config }) {
   }, [table]);
 
   useEffect(() => { setRows(null); setEditing(null); setError(""); load(); }, [load]);
+  useEffect(() => { if (needsCustomers && editing) listRows("customers").then(({ data }) => setCustomers(data || [])); }, [needsCustomers, editing]);
+
+  const handleUpload = async (field, file) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(bucket || table, file);
+      setEditing((ed) => ({ ...ed, [field]: url }));
+    } catch (err) { setError(`Upload failed: ${err.message}`); }
+    setUploading(false);
+  };
 
   const blank = () => Object.fromEntries(fields.map((f) => [f.name, f.type === "checkbox" ? false : ""]));
 
@@ -92,6 +106,20 @@ export default function Manage({ config }) {
                   <select value={editing[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })} data-testid={`${table}-field-${f.name}`}>
                     <option value="">—</option>{f.options.map((o) => <option key={o}>{o}</option>)}
                   </select>
+                ) : f.type === "customer" ? (
+                  <select value={editing[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value || null })} data-testid={`${table}-field-${f.name}`}>
+                    <option value="">— not linked —</option>
+                    {customers.map((c) => <option key={c.id} value={c.id}>{c.name} {c.email ? `(${c.email})` : c.phone ? `(${c.phone})` : ""}</option>)}
+                  </select>
+                ) : f.type === "image" ? (
+                  <div className="image-field" data-testid={`${table}-field-${f.name}`}>
+                    {editing[f.name] && <img src={editing[f.name]} alt="preview" className="image-preview" />}
+                    <label className="upload-button">
+                      {uploading ? <Loader2 className="spin" size={15} /> : <ImagePlus size={15} />} {editing[f.name] ? "Replace photo" : "Upload photo"}
+                      <input type="file" accept="image/*" hidden onChange={(e) => handleUpload(f.name, e.target.files[0])} data-testid={`${table}-file-${f.name}`} />
+                    </label>
+                    {editing[f.name] && <button type="button" className="quiet-button danger" onClick={() => setEditing({ ...editing, [f.name]: null })}>Remove</button>}
+                  </div>
                 ) : f.type === "checkbox" ? (
                   <input type="checkbox" checked={!!editing[f.name]} onChange={(e) => setEditing({ ...editing, [f.name]: e.target.checked })} data-testid={`${table}-field-${f.name}`} />
                 ) : (
@@ -99,7 +127,7 @@ export default function Manage({ config }) {
                 )}
               </label>
             ))}
-            <button className="button button-gold" disabled={saving} data-testid={`${table}-form-save`}>{saving ? "Saving…" : "Save"}</button>
+            <button className="button button-gold" disabled={saving || uploading} data-testid={`${table}-form-save`}>{saving ? "Saving…" : "Save"}</button>
           </form>
         </div>
       )}

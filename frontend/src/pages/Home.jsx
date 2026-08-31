@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BadgeIndianRupee, BatteryCharging, BarChart3, ChevronDown, ChevronRight, FileCheck, Gauge, House, Landmark, Leaf, PlugZap, ShieldCheck, Sun, Zap } from "lucide-react";
+import { ArrowRight, BadgeIndianRupee, BatteryCharging, BarChart3, ChevronDown, ChevronRight, FileCheck, Gauge, House, Landmark, Leaf, PlugZap, ShieldCheck, Sun, UtilityPole, Zap } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Reveal } from "@/components/Reveal";
-import { COMPANY, centralSubsidy, inr, waLink } from "@/lib/company";
+import { COMPANY, inr, waLink } from "@/lib/company";
+import { subsidyFor, useCalcSettings } from "@/hooks/useCalcSettings";
 
 const heroImage = "https://images.pexels.com/photos/38928940/pexels-photo-38928940.jpeg?auto=compress&cs=tinysrgb&w=1800";
 
@@ -47,10 +48,11 @@ function Hero() {
 
 function Calculator() {
   const [bill, setBill] = useState(4500), [roof, setRoof] = useState(600), [type, setType] = useState("Home");
+  const s = useCalcSettings();
   const r = useMemo(() => {
-    const size = Math.max(1, Math.min(20, Math.round(bill / 85) / 10)), gen = Math.round(size * 1450), annual = Math.round(bill * 12 * 0.82), cost = Math.round(size * 52000);
+    const size = Math.max(1, Math.min(20, Math.round((bill / s.bill_per_kw) * 10) / 10)), gen = Math.round(size * s.gen_per_kw_year), annual = Math.round(bill * 12 * s.savings_factor), cost = Math.round(size * s.cost_per_kw);
     return { size, gen, annual, cost, pay: (cost / annual).toFixed(1) };
-  }, [bill]);
+  }, [bill, s]);
   return (
     <section className="section calculator-section" id="calculator" data-testid="calculator-section">
       <div className="container calc-layout">
@@ -87,13 +89,13 @@ function Calculator() {
   );
 }
 
-const tiers = [
-  { kw: "1 kW", fit: "Compact homes", subsidy: centralSubsidy(1) },
-  { kw: "2 kW", fit: "Medium homes", subsidy: centralSubsidy(2) },
-  { kw: "3 kW+", fit: "Larger homes & shops", subsidy: centralSubsidy(3), popular: true },
-];
-
 function Subsidy() {
+  const s = useCalcSettings();
+  const tiers = [
+    { kw: "1 kW", fit: "Compact homes", subsidy: subsidyFor(1, s) },
+    { kw: "2 kW", fit: "Medium homes", subsidy: subsidyFor(2, s) },
+    { kw: "3 kW+", fit: "Larger homes & shops", subsidy: subsidyFor(3, s), popular: true },
+  ];
   return (
     <section className="section subsidy-section" data-testid="subsidy-section">
       <div className="container">
@@ -121,10 +123,10 @@ function Subsidy() {
 }
 
 const steps = [
-  ["Panels", "Sunlight becomes DC power on your roof", Sun],
-  ["Inverter", "DC is converted to usable AC power", PlugZap],
-  ["Net meter", "Exports and imports are measured", Gauge],
-  ["Home & grid", "Use what you need, feed back the rest", House],
+  ["Panels", "Generate DC power from sunlight", Sun],
+  ["Inverter", "Converts DC to AC power", PlugZap],
+  ["Net meter", "Tracks export and import", Gauge],
+  ["Grid / Home", "Use your power or feed it back", House],
 ];
 
 function HowItWorks() {
@@ -132,7 +134,50 @@ function HowItWorks() {
     <section className="section how-section" data-testid="how-it-works-section">
       <div className="container">
         <Reveal>
-          <Intro eyebrow="The technology" title="How an on-grid solar system works." copy="Four quiet steps between the sun and your switchboard." />
+          <Intro eyebrow="The technology" title="How on-grid solar works." copy="From sunlight on your roof to the meter that credits every extra unit." />
+        </Reveal>
+        <Reveal className="solar-diagram" delay={100} data-testid="solar-diagram">
+          <div className="diagram-node sun-node" data-testid="diagram-sun">
+            <span className="node-icon gold"><Sun /></span>
+            <b>Sun's energy</b>
+            <small>Free fuel, every day</small>
+          </div>
+          <div className="diagram-arrow"><i /><span>sunlight</span></div>
+          <div className="diagram-node" data-testid="diagram-panels">
+            <span className="node-icon"><Zap /></span>
+            <b>1. Solar panels</b>
+            <small>Generate DC current</small>
+          </div>
+          <div className="diagram-arrow"><i /><span>DC current</span></div>
+          <div className="diagram-node" data-testid="diagram-inverter">
+            <span className="node-icon"><PlugZap /></span>
+            <b>2. Inverter</b>
+            <small>Converts DC to AC</small>
+          </div>
+          <div className="diagram-arrow"><i /><span>AC current</span></div>
+          <div className="diagram-node meter-node" data-testid="diagram-meter">
+            <span className="node-icon"><Gauge /></span>
+            <b>3. Net meter</b>
+            <small>Tracks export / import</small>
+          </div>
+          <div className="diagram-split">
+            <div className="diagram-branch">
+              <div className="diagram-arrow short green"><i /><span>to home</span></div>
+              <div className="diagram-node mini" data-testid="diagram-home">
+                <span className="node-icon green"><House /></span>
+                <b>4. Home</b>
+                <small>Use your own power</small>
+              </div>
+            </div>
+            <div className="diagram-branch">
+              <div className="diagram-arrow short blue"><i /><span>export / import</span></div>
+              <div className="diagram-node mini" data-testid="diagram-grid">
+                <span className="node-icon blue"><UtilityPole /></span>
+                <b>Utility grid</b>
+                <small>Sell extra units back</small>
+              </div>
+            </div>
+          </div>
         </Reveal>
         <div className="how-line">
           {steps.map(([t, c, Icon], i) => (

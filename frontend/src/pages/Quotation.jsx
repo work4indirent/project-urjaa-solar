@@ -4,7 +4,8 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Reveal } from "@/components/Reveal";
 import { createQuotationRequest } from "@/lib/db";
-import { centralSubsidy, inr, waLink } from "@/lib/company";
+import { inr, waLink } from "@/lib/company";
+import { subsidyFor, useCalcSettings } from "@/hooks/useCalcSettings";
 import { STATES, districtsFor } from "@/lib/geo";
 
 const PANEL_TYPES = ["Monocrystalline", "Polycrystalline", "Bifacial", "Not sure — recommend for me"];
@@ -14,14 +15,15 @@ export default function Quotation() {
   const [done, setDone] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const settings = useCalcSettings();
   const districts = districtsFor(form.state);
 
   const est = useMemo(() => {
-    const size = Math.max(1, Math.min(25, Math.round((form.monthly_bill / 850) * 10) / 10));
-    const cost = Math.round(size * 55000);
-    const subsidy = form.property_type === "Home" ? centralSubsidy(size) : 0;
+    const size = Math.max(1, Math.min(25, Math.round((form.monthly_bill / settings.bill_per_kw) * 10) / 10));
+    const cost = Math.round(size * settings.cost_per_kw);
+    const subsidy = form.property_type === "Home" ? subsidyFor(size, settings) : 0;
     return { size, cost, subsidy, payable: Math.max(0, cost - subsidy) };
-  }, [form.monthly_bill, form.property_type]);
+  }, [form.monthly_bill, form.property_type, settings]);
 
   const update = (e) => {
     const { name, value } = e.target;

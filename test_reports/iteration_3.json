@@ -1,0 +1,28 @@
+{
+  "summary": "Frontend-only E2E of the NEW URJAA feature batch (Supabase-direct). Verified: (a) public homepage loads with logo, hero, calculator (2 sliders update), and 'How on-grid solar works' section; (b) /products catalog loads published products from Supabase and each card links to /products/:id detail page which renders the spec table plus 'Get quotation with this' and WhatsApp buttons (wa.me/919867405251); (c) /projects catalog page renders (empty state OK - no published projects); (d) Admin login (urjaasolarenergy@gmail.com / UrjaaSolar@2026) reveals sidebar with Dashboard, Leads, Quotations, Customers, Products, Projects, Subsidies, Services, Settings; (e) Admin Settings: edited cost_per_kw 55000 -> 57777, save returned success ('Saved. The website calculator...'), value persisted in site_settings and reflected on reload; then restored to 55000; (f) Admin Products: created TEST_Product with PNG upload -> Supabase storage 'products' bucket returned public URL (jiorzvadpvnviampkels.supabase.co/storage/v1/object/public/products/<ts>-test_product.png), thumbnail rendered in admin table, product appeared on public /products with image and product-detail page loaded with spec table + correct wa.me link; (g) Admin Customers: added TEST_Portal customer with email, row showed 'Awaiting sign-up'; (h) Admin Projects: added TEST_Project linked to the newly created customer via dropdown (dropdown correctly listed the customer after a small mount-time wait) and marked Published; (i) Customer Portal RLS: in a fresh incognito context, signed up at /customer with the SAME email portaltest+<ts>@example.com -> portal activated automatically (customer-portal visible, portal-not-active not shown) and displayed exactly 1 project (the linked one) and 0 quotations - RLS ownership scoping is correctly enforced (did not leak other customers' rows).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin Manage (Projects/Services)", "issues": ["Customer dropdown is populated by a single useEffect that fires on mount only. If you click 'Add' immediately after switching from Customers -> Projects, the customers list may not have resolved yet and the dropdown shows only the '— not linked —' placeholder. Add a small loading state or refetch on drawer open."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_3.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Manage.jsx: customers list is fetched once on mount when needsCustomers=true. If admin navigates Customers -> Projects and hits Add immediately, the dropdown briefly shows no options. Consider re-fetching when the drawer opens, or await the load before rendering the customer <select>.",
+    "Manage.jsx handleUpload does not enforce max file size or MIME whitelist. Supabase Storage anon policy accepts any file - large image uploads should be guarded client-side.",
+    "SettingsPage.jsx does not validate ranges (e.g. savings_factor must be 0-1; subsidies non-negative). A stray value here silently propagates to the public calculator.",
+    "Customer.jsx sign-up creates an auth user; matching to customers.profile_id relies on the DB trigger. If a customer signs up with an email NOT pre-added by admin, they permanently see portal-not-active. Consider surfacing 'Contact us' guidance or a self-serve request flow (WhatsApp CTA is present, good).",
+    "ProductDetail.jsx does not filter by is_published, so unpublished product IDs can still be viewed directly if the id is known (minor; RLS may block for anon depending on policy - verify Supabase RLS on products SELECT)."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "n/a (Supabase-direct, not tested per request)", "frontend": "100% of the requested new-feature flows passed" },
+  "test_credentials": "Admin urjaasolarenergy@gmail.com / UrjaaSolar@2026 (worked). Portal test signup used dynamic emails portaltest+<ts>@example.com / TestPass@2026.",
+  "seed_data_creation": "All test data created was cleaned up via the admin UI delete buttons at end of each run: TEST_Product_<ts>, TEST_Customer_<ts>, TEST_Portal_<ts>, TEST_Project_<ts>. Uploaded storage object 1788197391385-test_product.png remains in the 'products' bucket (Supabase storage is not deleted when a product row is deleted); main agent may wish to purge orphan storage objects periodically.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Migration 003 is live: storage buckets 'products'/'projects', customers table with profile_id auto-linked via email trigger on auth signup, site_settings public read/admin write. RLS ownership on quotations/projects/service_requests via customer_id -> customers.profile_id = auth.uid() is confirmed working. When testing customer portal, MUST use a fresh browser context - if admin is logged in in the same context, /customer takes them to their own (empty) portal instead of the sign-up form. Also give Manage.jsx ~2s to fetch customers before opening the Projects/Services drawer, otherwise the customer dropdown is empty.",
+  "rca of the issue": "No blocking bugs. One minor UX quirk in Manage.jsx: customer dropdown may briefly show only the placeholder if the drawer is opened before the customers listRows() promise resolves. Reproduction: log in as admin, navigate Customers -> Add customer -> immediately click Projects -> Add. Mitigation: refetch customers inside the drawer effect, or gate the <select> render on a customers-loaded flag."
+}

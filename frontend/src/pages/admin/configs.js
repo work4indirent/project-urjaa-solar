@@ -34,7 +34,9 @@ export const productsConfig = {
   title: "Products",
   subtitle: "Catalogue shown on the public products page when published.",
   statusField: null,
+  bucket: "products",
   columns: [
+    { key: "image_url", label: "Photo", render: (r) => (r.image_url ? <img className="table-thumb" src={r.image_url} alt="" /> : "—") },
     { key: "name", label: "Name" },
     { key: "brand", label: "Brand" },
     { key: "category", label: "Category" },
@@ -44,6 +46,7 @@ export const productsConfig = {
   ],
   fields: [
     { name: "name", label: "Name", required: true },
+    { name: "image_url", label: "Product photo", type: "image" },
     { name: "brand", label: "Brand" },
     { name: "category", label: "Category", type: "select", options: ["Solar Panels", "Inverters", "Batteries", "Mounting & Protection", "Accessories"] },
     { name: "capacity", label: "Capacity / Rating" },
@@ -60,7 +63,9 @@ export const projectsConfig = {
   subtitle: "Installations and case studies. Published ones appear on the website.",
   statusField: "status",
   statusOptions: ["planned", "survey", "in_progress", "commissioned", "closed"],
+  bucket: "projects",
   columns: [
+    { key: "image_url", label: "Photo", render: (r) => (r.image_url ? <img className="table-thumb" src={r.image_url} alt="" /> : "—") },
     { key: "name", label: "Name" },
     { key: "location", label: "Location" },
     { key: "capacity", label: "Capacity" },
@@ -69,6 +74,8 @@ export const projectsConfig = {
   ],
   fields: [
     { name: "name", label: "Project name", required: true },
+    { name: "image_url", label: "Project photo", type: "image" },
+    { name: "customer_id", label: "Linked customer (for portal)", type: "customer" },
     { name: "location", label: "Location" },
     { name: "state", label: "State" },
     { name: "district", label: "District" },
@@ -120,8 +127,29 @@ export const servicesConfig = {
     { name: "phone", label: "Phone", required: true },
     { name: "email", label: "Email" },
     { name: "city", label: "City" },
+    { name: "customer_id", label: "Linked customer (for portal)", type: "customer" },
     { name: "service_type", label: "Service type", type: "select", options: ["Panel cleaning", "Inverter issue", "Generation drop", "Net metering", "AMC visit", "Other"] },
     { name: "description", label: "Description", type: "textarea" },
+    { name: "notes", label: "Internal notes", type: "textarea" },
+  ],
+};
+
+export const customersConfig = {
+  table: "customers",
+  title: "Customers",
+  subtitle: "Add a customer's email or phone here to activate their portal. When they sign up at /customer with the same email, their portal opens automatically with everything you've linked to them.",
+  statusField: null,
+  columns: [
+    { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "profile_id", label: "Portal", render: (r) => (r.profile_id ? "✓ Active" : "Awaiting sign-up") },
+    { key: "created_at", label: "Added", render: (r) => new Date(r.created_at).toLocaleDateString("en-IN") },
+  ],
+  fields: [
+    { name: "name", label: "Customer name", required: true },
+    { name: "email", label: "Email (used to match their portal login)" },
+    { name: "phone", label: "Phone" },
     { name: "notes", label: "Internal notes", type: "textarea" },
   ],
 };
